@@ -1,0 +1,7 @@
+/* Import IBM Plex Sans font for clinical dashboard */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+/* Root CSS reset - minimal to work with App.css */
+#root {
+  min-height: 100vh;
+}
