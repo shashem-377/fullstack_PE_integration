@@ -128,5 +128,40 @@ export interface DemoScenario {
   name: string;
   description: string;
   data: APIAssessmentResponse;
+  // Extended data for HUD components (optional, used by pitch scenarios)
+  extendedData?: {
+    vitals?: {
+      hr?: number | null;
+      sbp?: number | null;
+      dbp?: number | null;
+      rr?: number | null;
+      spo2?: number | null;
+      temp?: number | null;
+      timestamp?: string;
+    };
+    labs?: {
+      ddimer?: number | null;
+      ddimerUnits?: string;
+      creatinine?: number | null;
+      gfr?: number | null;
+      troponin?: number | null;
+      inr?: number | null;
+    };
+    medications?: {
+      current?: Array<{ name: string; type: string; status: string }>;
+      lastDispense?: {
+        drug?: string;
+        date?: string;
+        daysSupply?: number;
+      };
+    };
+    allergies?: Array<{ substance: string; reaction?: string; code?: string }>;
+    priorImaging?: Array<{ date: string; modality: string; result?: string }>;
+    clinicalHistory?: {
+      priorDVT?: { date?: string; diagnosed?: boolean };
+      priorPE?: { date?: string; diagnosed?: boolean };
+      recentSurgery?: { date?: string; type?: string };
+    };
+  };
 }
 

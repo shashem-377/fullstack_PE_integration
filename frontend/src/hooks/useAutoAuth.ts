@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 interface AuthStatus {
   authenticated: boolean;
@@ -19,8 +19,14 @@ interface UseAutoAuthResult {
   sandboxMode: boolean;
   timeRemaining: number;
   backendAvailable: boolean;
+  isDemoFallback: boolean;
+  connectionTimedOut: boolean;
   triggerReauth: () => Promise<void>;
+  forceDemoMode: () => void;
 }
+
+// Connection timeout: 2 seconds (fast failover to demo mode)
+const CONNECTION_TIMEOUT_MS = 2000;
 
 // Loop prevention: track auth attempts
 const AUTH_ATTEMPT_KEY = 'smartAuthAttemptedAt';
@@ -45,6 +51,11 @@ export function useAutoAuth(): UseAutoAuthResult {
   const [sandboxMode, setSandboxMode] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [backendAvailable, setBackendAvailable] = useState(true);
+  const [isDemoFallback, setIsDemoFallback] = useState(false);
+  const [connectionTimedOut, setConnectionTimedOut] = useState(false);
+  
+  // Track if we've already attempted connection
+  const connectionAttempted = useRef(false);
 
   // Check if we're in the middle of OAuth callback
   const isInOAuthFlow = useCallback(() => {
@@ -83,10 +94,23 @@ export function useAutoAuth(): UseAutoAuthResult {
     localStorage.removeItem(AUTH_ATTEMPT_KEY);
   }, []);
 
+  // Force demo mode (user-initiated or timeout fallback)
+  const forceDemoMode = useCallback(() => {
+    console.log('[AutoAuth] Forcing demo fallback mode');
+    setIsDemoFallback(true);
+    setIsAuthenticated(false);
+    setIsChecking(false);
+    setBackendAvailable(false);
+    setAuthError(null);
+  }, []);
+
   // Trigger re-authentication manually
   // Go directly to backend (not through Vite proxy) for proper redirect handling
   // Returns Promise to allow caller to handle 409 conflicts
   const triggerReauth = useCallback(async () => {
+    // Clear demo fallback state when attempting reauth
+    setIsDemoFallback(false);
+    setConnectionTimedOut(false);
     recordAuthAttempt();
     
     // First, check if auth is already in progress by making a HEAD request
@@ -148,10 +172,16 @@ export function useAutoAuth(): UseAutoAuthResult {
     }
   }, [clearAuthAttempt]);
 
-  // Check auth status
+  // Check auth status with timeout
   useEffect(() => {
     // Skip if we already have a session from URL
     if (sessionId) {
+      return;
+    }
+    
+    // Skip if already in demo fallback
+    if (isDemoFallback) {
+      setIsChecking(false);
       return;
     }
 
@@ -164,6 +194,18 @@ export function useAutoAuth(): UseAutoAuthResult {
 
       // Check frontend env flag first
       const frontendSandboxMode = import.meta.env.VITE_SANDBOX_MODE === 'true';
+      
+      // Create AbortController for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        console.warn(`[AutoAuth] Connection timeout (${CONNECTION_TIMEOUT_MS}ms) - switching to demo fallback`);
+        controller.abort();
+        setConnectionTimedOut(true);
+        setIsDemoFallback(true);
+        setBackendAvailable(false);
+        setIsChecking(false);
+        setAuthError('Connection timed out. Using demo mode. Click "Connect" to retry.');
+      }, CONNECTION_TIMEOUT_MS);
 
       try {
         // Check for stored session
@@ -175,9 +217,12 @@ export function useAutoAuth(): UseAutoAuthResult {
           { 
             method: 'GET',
             headers: { 'Accept': 'application/json' },
-            credentials: 'include'  // Include cookies for session
+            credentials: 'include',  // Include cookies for session
+            signal: controller.signal
           }
         );
+        
+        clearTimeout(timeoutId);
         
         if (!response.ok) {
           // Backend returned error but is reachable
@@ -193,6 +238,8 @@ export function useAutoAuth(): UseAutoAuthResult {
         setBackendAvailable(true);
         setSandboxMode(status.sandboxMode || frontendSandboxMode);
         setTimeRemaining(status.timeRemaining);
+        setIsDemoFallback(false);
+        setConnectionTimedOut(false);
         
         if (status.authenticated) {
           setIsAuthenticated(true);
@@ -210,7 +257,7 @@ export function useAutoAuth(): UseAutoAuthResult {
             console.log('[AutoAuth] No valid session, auto-launching SMART auth...');
             recordAuthAttempt();
             // Standalone launch - no iss param needed, backend uses configured FHIR_BASE_URL
-    window.location.href = 'http://localhost:8000/launch';
+            window.location.href = 'http://localhost:8000/launch';
             return;
           } else if (shouldAutoLaunch && isInLoopCooldown()) {
             const remaining = Math.ceil((AUTH_LOOP_COOLDOWN_MS - (Date.now() - parseInt(localStorage.getItem(AUTH_ATTEMPT_KEY) || '0', 10))) / 1000);
@@ -221,16 +268,20 @@ export function useAutoAuth(): UseAutoAuthResult {
           }
         }
       } catch (err) {
-        // Backend is not reachable - this is okay in demo mode
-        console.warn('[AutoAuth] Backend not reachable:', err);
-        setBackendAvailable(false);
-        setSandboxMode(frontendSandboxMode);
+        clearTimeout(timeoutId);
         
-        // Don't show error if we're just in demo mode without backend
-        if (frontendSandboxMode) {
-          setAuthError('Backend not available. Start backend with: cd backend && uvicorn main:app --reload');
+        // Check if this was an abort (timeout)
+        if (err instanceof Error && err.name === 'AbortError') {
+          // Already handled in timeout callback
+          return;
         }
-        // If not in sandbox mode, just continue without auth (demo mode)
+        
+        // Backend is not reachable - automatically fall back to demo mode
+        console.warn('[AutoAuth] Backend not reachable, switching to demo fallback:', err);
+        setBackendAvailable(false);
+        setIsDemoFallback(true);
+        setSandboxMode(frontendSandboxMode);
+        setAuthError('Backend not available. Using demo mode with sample patient data.');
       } finally {
         setIsChecking(false);
       }
@@ -239,7 +290,7 @@ export function useAutoAuth(): UseAutoAuthResult {
     // Small delay to avoid flash on page load
     const timer = setTimeout(checkAuth, 100);
     return () => clearTimeout(timer);
-  }, [sessionId, isInOAuthFlow, isInLoopCooldown, recordAuthAttempt, clearAuthAttempt]);
+  }, [sessionId, isDemoFallback, isInOAuthFlow, isInLoopCooldown, recordAuthAttempt, clearAuthAttempt]);
 
   return {
     isAuthenticated,
@@ -250,6 +301,9 @@ export function useAutoAuth(): UseAutoAuthResult {
     sandboxMode,
     timeRemaining,
     backendAvailable,
-    triggerReauth
+    isDemoFallback,
+    connectionTimedOut,
+    triggerReauth,
+    forceDemoMode
   };
 }
