@@ -1,16 +1,17 @@
 /**
  * Clinical Demo Scenarios for Luminur PE Calculator
  * 
- * 11 Teaching Cases curated by Clinical Lead
- * 
+ * 13 Teaching Cases curated by Clinical Lead
+ *
  * FDA 21st Century Cures Act Compliant:
  * - No AI predictions or probability scores
  * - Standard medical calculators only (Wells, PERC, 4PEPS, Shock Index, MSI)
  * - Factual data presentation
- * 
+ *
  * Cases 1-5: "False Positive D-Dimer" (High D-Dimer, PE Unlikely due to confounders)
  * Cases 6-10: "Pre-Workup" (D-Dimer Pending)
  * Case 11: "Classic PE" (True Positive - Textbook Presentation)
+ * Cases 12-13: "Equivocal PERC Fail" (Age-Driven & HR/Estrogen)
  */
 
 import type { DemoScenario } from '../types/assessment';
@@ -224,7 +225,6 @@ const CASE_001_PNEUMONIA: TeachingCase = {
     { date: '5 days ago', type: 'Diagnosis', title: 'Cough Onset', subtitle: 'Productive with yellow sputum' },
     { date: '2 days ago', type: 'Diagnosis', title: 'Fever Developed', subtitle: 'Up to 39°C' },
     { date: 'Today', type: 'Imaging', title: 'CXR', subtitle: 'RLL consolidation', status: 'Positive' },
-    { date: 'Today 14:30', type: 'Lab', title: 'D-Dimer', subtitle: '1.85 µg/mL', status: 'Positive' },
   ],
   priorImaging: {
     modality: 'CTPA',
@@ -287,7 +287,6 @@ const CASE_002_MALIGNANCY: TeachingCase = {
     { date: '8 months ago', type: 'Diagnosis', title: 'Breast Cancer Dx', subtitle: 'Stage IV with bone mets' },
     { date: '2 months ago', type: 'Lab', title: 'Prior D-Dimer', subtitle: '2.8 µg/mL (baseline)', status: 'Neutral' },
     { date: '3 days ago', type: 'Procedure', title: 'Chemo Cycle 4', subtitle: 'Completed' },
-    { date: 'Today 15:45', type: 'Lab', title: 'D-Dimer', subtitle: '3.20 µg/mL', status: 'Positive' },
   ],
   priorImaging: null,
   hasChronicRespiratoryDisease: false,
@@ -343,7 +342,6 @@ const CASE_003_PREGNANCY: TeachingCase = {
   timeline: [
     { date: '34 weeks ago', type: 'Diagnosis', title: 'Pregnancy Confirmed', subtitle: 'EDD March 10' },
     { date: '10 weeks ago', type: 'Diagnosis', title: 'GDM Diagnosed', subtitle: 'Diet controlled' },
-    { date: 'Today 12:00', type: 'Lab', title: 'D-Dimer', subtitle: '1.45 µg/mL', status: 'Neutral' },
   ],
   priorImaging: null,
   hasChronicRespiratoryDisease: false,
@@ -401,7 +399,6 @@ const CASE_004_POSTOP: TeachingCase = {
     { date: '2 weeks ago', type: 'Procedure', title: 'Right TKA', subtitle: 'Uncomplicated' },
     { date: '12 days ago', type: 'Procedure', title: 'Hospital Discharge', subtitle: 'On Lovenox prophylaxis' },
     { date: '3 days ago', type: 'Imaging', title: 'CTPA', subtitle: 'Negative for PE', status: 'Negative' },
-    { date: 'Today 16:20', type: 'Lab', title: 'D-Dimer', subtitle: '0.92 µg/mL', status: 'Neutral' },
   ],
   priorImaging: {
     modality: 'CTPA',
@@ -464,7 +461,6 @@ const CASE_005_RHEUMATOID: TeachingCase = {
     { date: '15 years ago', type: 'Diagnosis', title: 'RA Diagnosed', subtitle: 'Seropositive' },
     { date: '1 week ago', type: 'Diagnosis', title: 'Flare Onset', subtitle: 'Polyarticular involvement' },
     { date: 'Today', type: 'Lab', title: 'CRP', subtitle: '45 mg/L (elevated)', status: 'Positive' },
-    { date: 'Today 17:00', type: 'Lab', title: 'D-Dimer', subtitle: '0.88 µg/mL', status: 'Neutral' },
   ],
   priorImaging: null,
   hasChronicRespiratoryDisease: false,
@@ -523,7 +519,6 @@ const CASE_006_TRIAGE_CP: TeachingCase = {
     { name: 'Aspirin', category: 'Cardiovascular', dose: '81mg daily', lastRefill: '2026-01-10', daysSupply: 90 },
   ],
   timeline: [
-    { date: 'Today 18:00', type: 'Lab', title: 'D-Dimer Ordered', subtitle: 'Pending', status: 'Neutral' },
     { date: 'Today 18:00', type: 'Lab', title: 'Troponin Ordered', subtitle: 'Pending', status: 'Neutral' },
   ],
   priorImaging: null,
@@ -580,7 +575,6 @@ const CASE_007_ELDERLY_SYNCOPE: TeachingCase = {
   ],
   timeline: [
     { date: 'Today 14:30', type: 'Diagnosis', title: 'Syncope at Store', subtitle: 'Witnessed, brief LOC' },
-    { date: 'Today 14:45', type: 'Lab', title: 'D-Dimer Ordered', subtitle: 'Pending', status: 'Neutral' },
   ],
   priorImaging: null,
   hasChronicRespiratoryDisease: false,
@@ -637,7 +631,6 @@ const CASE_008_ANXIOUS_YOUNG: TeachingCase = {
   timeline: [
     { date: '4 years ago', type: 'Diagnosis', title: 'Anxiety Disorder Dx', subtitle: 'Started SSRI' },
     { date: 'Today 19:30', type: 'Diagnosis', title: 'Panic Attack', subtitle: 'Triggered by work stress' },
-    { date: 'Today 19:45', type: 'Lab', title: 'D-Dimer Ordered', subtitle: 'Pending', status: 'Neutral' },
   ],
   priorImaging: null,
   hasChronicRespiratoryDisease: false,
@@ -694,7 +687,6 @@ const CASE_009_POSTOP_DYSPNEA: TeachingCase = {
     { date: '2 weeks ago', type: 'Procedure', title: 'Right TKA', subtitle: 'Uncomplicated surgery' },
     { date: '5 days ago', type: 'Medication', title: 'Lovenox Stopped', subtitle: 'Completed 10-day course' },
     { date: '2 days ago', type: 'Diagnosis', title: 'Dyspnea Onset', subtitle: 'Progressive worsening' },
-    { date: 'Today 20:00', type: 'Lab', title: 'D-Dimer STAT', subtitle: 'URGENT - Pending', status: 'Neutral' },
   ],
   priorImaging: null,
   hasChronicRespiratoryDisease: false,
@@ -747,7 +739,6 @@ const CASE_010_VIRAL: TeachingCase = {
   timeline: [
     { date: '4 days ago', type: 'Diagnosis', title: 'Symptom Onset', subtitle: 'Fever, malaise, body aches' },
     { date: '2 days ago', type: 'Diagnosis', title: 'Cough Developed', subtitle: 'Non-productive' },
-    { date: 'Today 21:15', type: 'Lab', title: 'D-Dimer Ordered', subtitle: 'Pending', status: 'Neutral' },
   ],
   priorImaging: null,
   hasChronicRespiratoryDisease: false,
@@ -809,15 +800,137 @@ const CASE_011_CLASSIC_PE: TeachingCase = {
     { date: '3 days ago', type: 'Diagnosis', title: 'Long-Haul Flight', subtitle: '12-hour international flight' },
     { date: '2 days ago', type: 'Diagnosis', title: 'Calf Pain Onset', subtitle: 'Right leg swelling, pain' },
     { date: 'Today 20:00', type: 'Diagnosis', title: 'Acute Chest Pain', subtitle: 'Sudden sharp pleuritic pain' },
-    { date: 'Today 22:00', type: 'Lab', title: 'D-Dimer', subtitle: '4.85 µg/mL (Very High)', status: 'Positive' },
     { date: 'Today 22:00', type: 'Lab', title: 'Troponin', subtitle: '0.08 ng/mL (Elevated)', status: 'Positive' },
-    { date: 'Today 22:15', type: 'Imaging', title: 'CTPA Ordered', subtitle: 'STAT', status: 'Neutral' },
   ],
   priorImaging: null,
   hasChronicRespiratoryDisease: false,
   hasPriorVTE: true, // Current DVT counts
   hasRecentSurgery: false,
   usesEstrogen: false,
+  hasContrastAllergy: false,
+  bleedingRisk: 'low',
+};
+
+// ===========================================================================
+// CASE 12-13: EQUIVOCAL PERC FAILS (Age-Driven & HR/Estrogen)
+// ===========================================================================
+
+const CASE_012_EQUIVOCAL_LEG: TeachingCase = {
+  id: 'case-12',
+  name: 'Barnes, Richard',
+  age: 52,
+  gender: 'Male',
+  mrn: 'MRN-6193827',
+  clinicalDescriptor: 'The Equivocal Leg (Age-Driven PERC Fail)',
+  chiefComplaint: 'Left calf cramping x 3 days, mild SOB today',
+  vitals: {
+    hr: 85,
+    sbp: 130,
+    dbp: 80,
+    rr: 16,
+    spo2: 98,
+    temp: 36.8,
+    o2Device: 'Room Air',
+  },
+  ddimer: { value: 0.65, unit: 'µg/mL', timestamp: '2026-01-27T16:00:00Z' },
+  wellsScore: 0,
+  wellsRisk: 'low',
+  percScore: 1,
+  percNegative: false,
+  creatinine: 1.0,
+  egfr: 85,
+  troponin: 0.01,
+  activeProblems: ['Calf Pain', 'Hyperlipidemia'],
+  relevantHistory: [
+    'Left calf cramping after long drive (6 hours)',
+    'No prior VTE',
+    'Mild SOB started today',
+    'Active lifestyle, regular jogger',
+  ],
+  physicalExam: [
+    'Well-appearing male',
+    'Left calf mildly tender, no erythema',
+    'No measurable asymmetry',
+    'Lungs clear',
+    'No JVD',
+  ],
+  medications: [
+    { name: 'Atorvastatin', category: 'Cardiovascular', dose: '20mg daily', lastRefill: '2026-01-10', daysSupply: 90 },
+  ],
+  timeline: [
+    { date: '3 days ago', type: 'Diagnosis', title: 'Calf Cramping Onset', subtitle: 'After 6-hour drive' },
+    { date: 'Today', type: 'Diagnosis', title: 'Mild SOB', subtitle: 'Noticed on exertion' },
+    { date: 'Today 16:00', type: 'Lab', title: 'D-Dimer', subtitle: '0.65 µg/mL', status: 'Neutral' },
+  ],
+  priorImaging: null,
+  hasChronicRespiratoryDisease: false,
+  hasPriorVTE: false,
+  hasRecentSurgery: false,
+  usesEstrogen: false,
+  hasContrastAllergy: false,
+  bleedingRisk: 'low',
+};
+
+const CASE_013_TACHYCARDIC_PILL: TeachingCase = {
+  id: 'case-13',
+  name: 'Chen, Lisa',
+  age: 35,
+  gender: 'Female',
+  mrn: 'MRN-7281946',
+  clinicalDescriptor: 'The Tachycardic Pill (HR/Estrogen PERC Fail)',
+  chiefComplaint: 'Palpitations, mild chest tightness',
+  vitals: {
+    hr: 102,
+    sbp: 115,
+    dbp: 70,
+    rr: 18,
+    spo2: 99,
+    temp: 36.7,
+    o2Device: 'Room Air',
+  },
+  ddimer: { value: 0.85, unit: 'µg/mL', timestamp: '2026-01-27T17:30:00Z' },
+  wellsScore: 1.5,
+  wellsRisk: 'low',
+  percScore: 2,
+  percNegative: false,
+  creatinine: 0.7,
+  egfr: 115,
+  troponin: null,
+  activeProblems: ['Oral Contraceptive Use', 'Palpitations'],
+  relevantHistory: [
+    'On oral contraceptives x 2 years',
+    'Episodes of palpitations (intermittent)',
+    'No prior VTE',
+    'Non-smoker',
+    'No family history of clotting disorders',
+  ],
+  physicalExam: [
+    'Anxious but well-appearing',
+    'Tachycardic, regular rhythm',
+    'Lungs clear bilaterally',
+    'No leg swelling or tenderness',
+    'No JVD',
+  ],
+  medications: [
+    { name: 'Ethinyl Estradiol/Levonorgestrel', category: 'Hormonal', dose: '30mcg/0.15mg', lastRefill: '2026-01-20', daysSupply: 28 },
+    { name: 'Ibuprofen', category: 'Analgesic', dose: '400mg PRN', lastRefill: '2026-01-15', daysSupply: 30 },
+  ],
+  timeline: [
+    { date: '2 years ago', type: 'Medication', title: 'OCP Started', subtitle: 'Combined oral contraceptive' },
+    { date: '1 week ago', type: 'Diagnosis', title: 'Palpitation Episode', subtitle: 'Lasted ~30 minutes' },
+    { date: 'Today', type: 'Diagnosis', title: 'Recurrent Palpitations', subtitle: 'With mild chest tightness' },
+    { date: 'Today 17:30', type: 'Lab', title: 'D-Dimer', subtitle: '0.85 µg/mL', status: 'Neutral' },
+  ],
+  priorImaging: {
+    modality: 'CTPA',
+    date: '2024-03-10',
+    result: 'Negative',
+    reportSummary: 'No pulmonary embolism. Normal cardiac silhouette.',
+  },
+  hasChronicRespiratoryDisease: false,
+  hasPriorVTE: false,
+  hasRecentSurgery: false,
+  usesEstrogen: true,
   hasContrastAllergy: false,
   bleedingRisk: 'low',
 };
@@ -838,6 +951,8 @@ export const TEACHING_CASES: TeachingCase[] = [
   CASE_009_POSTOP_DYSPNEA,
   CASE_010_VIRAL,
   CASE_011_CLASSIC_PE,
+  CASE_012_EQUIVOCAL_LEG,
+  CASE_013_TACHYCARDIC_PILL,
 ];
 
 export const DEFAULT_CASE = TEACHING_CASES[0];
