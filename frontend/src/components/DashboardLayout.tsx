@@ -9,7 +9,8 @@
  * Standard medical calculators only - No AI predictions
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
+import YearsCalculatorModal from './YearsCalculatorModal';
 import {
   Activity,
   AlertTriangle,
@@ -524,8 +525,17 @@ function MedicalTimelineCard({ patient }: { patient: TeachingCase }) {
 // Main Component
 // ===========================================================================
 
+// Case 3 = TEACHING_CASES[11] (tab index 2), Case 4 = TEACHING_CASES[0] (tab index 3)
+const DDIMER_BUTTON_CASES: Record<number, 'case1' | 'case4'> = {
+  11: 'case1',
+  0: 'case4',
+};
+
 export default function DashboardLayout({ caseIndex = 0 }: DashboardLayoutProps) {
   const patient = TEACHING_CASES[caseIndex] || DEFAULT_CASE;
+  const [showYearsModal, setShowYearsModal] = useState(false);
+  const ddimerModalCase = DDIMER_BUTTON_CASES[caseIndex];
+
   return (
     <div>
 
@@ -567,6 +577,19 @@ export default function DashboardLayout({ caseIndex = 0 }: DashboardLayoutProps)
           <SafetyBarriersCard patient={patient} />
         </div>
 
+        {/* D-Dimer Result Button — Case 3 and Case 4 only */}
+        {ddimerModalCase && (
+          <div className="flex justify-center py-3">
+            <button
+              onClick={() => setShowYearsModal(true)}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors"
+            >
+              <Droplets size={15} />
+              View D-Dimer Result
+            </button>
+          </div>
+        )}
+
         {/* Footer */}
         <div className="text-center py-2">
           <p className="text-[9px] text-slate-600 uppercase tracking-wider">
@@ -575,6 +598,14 @@ export default function DashboardLayout({ caseIndex = 0 }: DashboardLayoutProps)
         </div>
 
       </div>
+
+      {/* YEARS Calculator Modal */}
+      {showYearsModal && ddimerModalCase && (
+        <YearsCalculatorModal
+          initialCase={ddimerModalCase}
+          onClose={() => setShowYearsModal(false)}
+        />
+      )}
 
     </div>
   );
