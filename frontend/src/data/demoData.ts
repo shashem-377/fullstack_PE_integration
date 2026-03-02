@@ -85,10 +85,14 @@ export interface TeachingCase {
   // 4PEPS specific fields
   hasChronicRespiratoryDisease: boolean;
   hasPriorVTE: boolean;
+  priorPEDate?: string; // "MM/DD/YYYY" – date of prior PE if hasPriorVTE is true
   hasRecentSurgery: boolean; // < 4 weeks
+  recentImmobilization?: { date: string; description: string }; // last 3 days
+  priorThrombophilia?: boolean;
   usesEstrogen: boolean;
   hasContrastAllergy: boolean;
   bleedingRisk: 'low' | 'moderate' | 'high';
+  totalRadiationExposureMSV?: number; // mSv accumulated last 4 weeks
 }
 
 // ===========================================================================
@@ -209,7 +213,8 @@ const CASE_001_PNEUMONIA: TeachingCase = {
   relevantHistory: [
     'Productive cough x 5 days',
     'Fever up to 39°C',
-    'No prior VTE',
+    'Prior PE 02/15/2023 — on Warfarin',
+    'Recent immobilization (fall, broken hip 03/1/2026)',
   ],
   physicalExam: [
     'Febrile, tachypneic',
@@ -218,6 +223,7 @@ const CASE_001_PNEUMONIA: TeachingCase = {
     'No leg swelling',
   ],
   medications: [
+    { name: 'Warfarin', category: 'Anticoagulant', dose: '5mg 2x/day', lastRefill: '2026-01-27', daysSupply: 30 },
     { name: 'Azithromycin', category: 'Antibiotic', dose: '500mg daily', lastRefill: '2026-01-27', daysSupply: 5 },
     { name: 'Lisinopril', category: 'Cardiovascular', dose: '10mg daily', lastRefill: '2026-01-10', daysSupply: 90 },
   ],
@@ -233,11 +239,15 @@ const CASE_001_PNEUMONIA: TeachingCase = {
     reportSummary: 'No pulmonary embolism. Mild atelectasis at lung bases.',
   },
   hasChronicRespiratoryDisease: false,
-  hasPriorVTE: false,
+  hasPriorVTE: true,
+  priorPEDate: '02/15/2023',
   hasRecentSurgery: false,
+  recentImmobilization: { date: '03/1/2026', description: 'Fall due to broken hip' },
+  priorThrombophilia: false,
   usesEstrogen: false,
   hasContrastAllergy: false,
   bleedingRisk: 'low',
+  totalRadiationExposureMSV: 120,
 };
 
 const CASE_002_MALIGNANCY: TeachingCase = {

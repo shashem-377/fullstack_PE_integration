@@ -13,22 +13,14 @@ function App() {
     <div className="min-h-screen bg-slate-50 text-slate-900">
       {/* Top Navigation Bar */}
       <div className="h-16 bg-white border-b border-slate-200 flex items-center px-6 justify-between shadow-sm sticky top-0 z-50">
-        <div className="flex items-center space-x-2 flex-shrink-0">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold">L</span>
-          </div>
-          <span className="font-bold text-xl text-slate-800">Luminur Clinical</span>
-        </div>
+        <span style={{ fontSize: 16, fontWeight: 500, color: '#111827' }}>PE Workup</span>
 
         {/* Case Selector — hidden */}
         <div className="flex-1 hidden" />
 
-        <div className="flex items-center space-x-4 flex-shrink-0">
-          <div className="text-right hidden md:block">
-            <p className="text-sm font-bold text-slate-900">Dr. Sandbox User</p>
-            <p className="text-xs text-slate-500">Emergency Medicine</p>
-          </div>
-          <div className="h-8 w-8 bg-slate-200 rounded-full" />
+        <div className="text-right hidden md:block">
+          <p style={{ fontSize: 14, fontWeight: 400, color: '#111827' }}>Dr. Anush Rizvi</p>
+          <p style={{ fontSize: 12, fontWeight: 400, color: '#596887' }}>Emergency Medicine</p>
         </div>
       </div>
 
