@@ -76,7 +76,7 @@ export default function ClinicianSummary({
     return null;
   }, [frontpageData, result]);
 
-  // Extract D-dimer
+  // Extract D-Dimer
   const ddimerLatest = useMemo(() => {
     if (frontpageData?.labs_latest) {
       return frontpageData.labs_latest;

@@ -414,7 +414,7 @@ export async function fetchPatientContext(
 }
 
 /**
- * Quick fetch for just vitals and D-dimer (for dashboard display)
+ * Quick fetch for just vitals and D-Dimer (for dashboard display)
  */
 export async function fetchQuickVitals(
   patientId: string

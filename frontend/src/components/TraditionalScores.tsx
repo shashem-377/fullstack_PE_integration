@@ -66,7 +66,7 @@ export default function TraditionalScores({ features }: TraditionalScoresProps) 
     const hasDdimer = ddimer !== undefined && ddimer !== null;
     
     let risk: 'low' | 'moderate' | 'high' | 'unknown' = 'unknown';
-    let label = hasDdimer ? `${score}/3` : `${score}/3 (no D-dimer)`;
+    let label = hasDdimer ? `${score}/3` : `${score}/3 (no D-Dimer)`;
     let shortLabel = `${score}/3`;
     let whyAbnormal: string | null = null;
     
@@ -79,7 +79,7 @@ export default function TraditionalScores({ features }: TraditionalScoresProps) 
         whyAbnormal = null;
       } else if (score > 0) {
         risk = 'moderate';
-        whyAbnormal = `${score} criteria + D-dimer ≥${score === 0 ? '1.0' : '0.5'}`;
+        whyAbnormal = `${score} criteria + D-Dimer ≥${score === 0 ? '1.0' : '0.5'}`;
       }
     } else if (!features) {
       risk = 'unknown';

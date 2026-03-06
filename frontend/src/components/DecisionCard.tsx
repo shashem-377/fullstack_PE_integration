@@ -50,12 +50,12 @@ function generateRationale(result: AssessmentResult): string {
     concerns.push('prior VTE');
   }
   
-  // Check D-dimer
+  // Check D-Dimer
   const ddimer = features.d_dimer ?? features.dDimer;
   if (ddimer != null && ddimer > 0.5) {
-    concerns.push('elevated D-dimer');
+    concerns.push('elevated D-Dimer');
   } else if (ddimer != null && ddimer <= 0.5) {
-    reassurances.push('normal D-dimer');
+    reassurances.push('normal D-Dimer');
   }
   
   // Check high-risk conditions

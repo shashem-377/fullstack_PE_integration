@@ -33,7 +33,7 @@ interface FrontpageData {
 
 /**
  * Clinical Snapshot - Layer 1 component
- * Shows latest vitals + D-dimer in a single row (no charts)
+ * Shows latest vitals + D-Dimer in a single row (no charts)
  * Uses SAME data source as vitals chart for consistency
  * 
  * Professional styling - no emojis
@@ -84,7 +84,7 @@ export default function ClinicalSnapshot({
         });
       }
       
-      // D-dimer from frontpage
+      // D-Dimer from frontpage
       if (frontpageData.ddimer_latest) {
         setDdimer(frontpageData.ddimer_latest);
       }
@@ -185,12 +185,12 @@ export default function ClinicalSnapshot({
           {renderVital('sbp', 'SBP', vitals?.sbp || null)}
           <div className="snapshot-divider" />
           
-          {/* D-dimer */}
+          {/* D-Dimer */}
           <div 
             className={`snapshot-item ${ddimer?.value && isVitalAbnormal('ddimer', ddimer.value) ? 'abnormal' : ''} ${!ddimer?.value ? 'missing' : ''}`}
-            title={ddimer?.ts ? `Last: ${formatVitalTimestamp(ddimer.ts)}` : 'No D-dimer available'}
+            title={ddimer?.ts ? `Last: ${formatVitalTimestamp(ddimer.ts)}` : 'No D-Dimer available'}
           >
-            <span className="snapshot-label">D-dimer</span>
+            <span className="snapshot-label">D-Dimer</span>
             {ddimer?.value !== null && ddimer?.value !== undefined ? (
               <>
                 <span className="snapshot-value">{formatVitalValue(ddimer.value, 2)}</span>

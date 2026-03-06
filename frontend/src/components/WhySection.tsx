@@ -78,13 +78,13 @@ export default function WhySection({ result }: WhySectionProps) {
       }
     }
     
-    // D-dimer if present - MUST guard against null/undefined
+    // D-Dimer if present - MUST guard against null/undefined
     const ddimer = features.d_dimer;
     if (isNum(ddimer)) {
       if (ddimer < 0.5) {
-        bullets.push(`D-dimer ${fmt(ddimer, 2)} is below cutoff`);
+        bullets.push(`D-Dimer ${fmt(ddimer, 2)} is below cutoff`);
       } else {
-        bullets.push(`D-dimer ${fmt(ddimer, 2)} is elevated`);
+        bullets.push(`D-Dimer ${fmt(ddimer, 2)} is elevated`);
       }
     }
     

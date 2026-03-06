@@ -25,7 +25,9 @@ export const colors = {
 
   lightBlue: '#Eff6FF',
   darkBlue: '#375292',
-  
+
+  inputBorder: '#D1D5DB',
+
 } as const;
 
 // ---------------------------------------------------------------------------

@@ -52,10 +52,11 @@ const ORANGE = colors.orange;
 const LT_ORG = colors.lightOrange;
 
 // Shared text style helpers
-const labelStyle  = { color: GRAY,  fontSize: fontSize.label } as const;
-const hdrStyle    = { color: BLACK, fontSize: fontSize.heading, fontWeight: fontWeight.semibold } as const;
-const listStyle   = { color: BLACK, fontSize: fontSize.body,   fontWeight: fontWeight.regular } as const;
-const bigNumStyle = { color: BLACK, fontSize: fontSize.display, fontWeight: fontWeight.medium, lineHeight: 1.1 } as const;
+const labelStyle     = { color: GRAY,  fontSize: fontSize.label } as const;
+const hdrStyle       = { color: GRAY, fontSize: 14, fontWeight: fontWeight.regular, textTransform: 'uppercase' as const } as const;
+const listStyle      = { color: BLACK, fontSize: fontSize.label,  fontWeight: fontWeight.regular } as const;
+const bigNumStyle    = { color: BLACK, fontSize: fontSize.display, fontWeight: fontWeight.regular, lineHeight: 1.1 } as const;
+const sectionHdrRow  = { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 24 } as const;
 
 // ===========================================================================
 // Types
@@ -63,13 +64,33 @@ const bigNumStyle = { color: BLACK, fontSize: fontSize.display, fontWeight: font
 
 interface DashboardLayoutProps {
   caseIndex?: number;
+  hideDDimer?: boolean;
 }
 
 // ===========================================================================
 // Vital Stability Section
 // ===========================================================================
 
-function VitalStabilitySection({ patient }: { patient: TeachingCase }) {
+function VitalCell({ v, Icon }: { v: { label: string; value: string; unit: string | null; suffix: string | null; alertLabel: string | null }; Icon: React.ElementType }) {
+  return (
+    <div style={{ textAlign: 'center' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, marginBottom: 4 }}>
+        <Icon size={14} color={GRAY} />
+        <span style={labelStyle}>{v.label}</span>
+      </div>
+      <div style={bigNumStyle}>{v.value}</div>
+      {v.suffix && <div style={labelStyle}>{v.suffix}</div>}
+      {v.unit && <div style={labelStyle}>{v.unit}</div>}
+      {v.alertLabel && (
+        <div style={{ color: RED, fontSize: 14, fontWeight: fontWeight.semibold, textTransform: 'uppercase', marginTop: 4 }}>
+          {v.alertLabel}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function VitalStabilitySection({ patient, compact }: { patient: TeachingCase; compact?: boolean }) {
   const { hr, sbp, dbp, rr, spo2, o2Device, temp } = patient.vitals;
 
   const vitals = [
@@ -121,46 +142,30 @@ function VitalStabilitySection({ patient }: { patient: TeachingCase }) {
   ];
 
   return (
-    <div style={{ padding: 20 }}>
+    <div style={{ padding: 24 }}>
       {/* Section header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 16 }}>
-        <Heart size={16} color={GRAY} />
+      <div style={sectionHdrRow}>
+        <Heart size={14} color={GRAY} />
         <span style={hdrStyle}>Vital Stability</span>
       </div>
 
-      {/* Five vitals — equal columns, elements centered within each cell */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', columnGap: 40 }}>
-        {vitals.map((v) => {
-          const { Icon } = v;
-          return (
-            <div key={v.label} style={{ textAlign: 'center' }}>
-              {/* Icon + label */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, marginBottom: 4 }}>
-                <Icon size={14} color={GRAY} />
-                <span style={labelStyle}>{v.label}</span>
-              </div>
-              {/* Value */}
-              <div style={bigNumStyle}>
-                {v.value}
-              </div>
-              {/* o2 device suffix (SPO2 only) */}
-              {v.suffix && (
-                <div style={labelStyle}>{v.suffix}</div>
-              )}
-              {/* Unit */}
-              {v.unit && (
-                <div style={labelStyle}>{v.unit}</div>
-              )}
-              {/* Alert label */}
-              {v.alertLabel && (
-                <div style={{ color: RED, fontSize: 14, fontWeight: 500, textTransform: 'uppercase', marginTop: 4 }}>
-                  {v.alertLabel}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+      {/* Five vitals */}
+      {compact ? (
+        // Small layout: HR + BP on row 1, SPO2 + RR + TEMP on row 2
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 48 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 24 }}>
+            {vitals.slice(0, 2).map((v) => { const { Icon } = v; return <VitalCell key={v.label} v={v} Icon={Icon} />; })}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', columnGap: 16 }}>
+            {vitals.slice(2).map((v) => { const { Icon } = v; return <VitalCell key={v.label} v={v} Icon={Icon} />; })}
+          </div>
+        </div>
+      ) : (
+        // Default: all five in one row
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', columnGap: 40 }}>
+          {vitals.map((v) => { const { Icon } = v; return <VitalCell key={v.label} v={v} Icon={Icon} />; })}
+        </div>
+      )}
     </div>
   );
 }
@@ -178,10 +183,10 @@ function HemodynamicStressSection({ patient }: { patient: TeachingCase }) {
     : 'safe';
 
   return (
-    <div style={{ padding: 20 }}>
+    <div style={{ padding: 24 }}>
       {/* Section header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 16 }}>
-        <Activity size={16} color={GRAY} />
+      <div style={sectionHdrRow}>
+        <Activity size={14} color={GRAY} />
         <span style={hdrStyle}>Hemodynamic Stress</span>
       </div>
 
@@ -203,10 +208,10 @@ function HemodynamicStressSection({ patient }: { patient: TeachingCase }) {
           </div>
           <div style={labelStyle}>HR / SBP</div>
           {siStatus === 'caution' && (
-            <div style={{ color: ORANGE, fontSize: 13, fontWeight: 500, marginTop: 4 }}>&gt; 0.7 Caution</div>
+            <div style={{ color: ORANGE, fontSize: 14, fontWeight: fontWeight.semibold, marginTop: 4, textTransform: 'uppercase' }}>&gt; 0.7 CAUTION</div>
           )}
           {siStatus === 'danger' && (
-            <div style={{ color: RED, fontSize: 13, fontWeight: 500, marginTop: 4 }}>&gt; 0.9 Risk</div>
+            <div style={{ color: RED, fontSize: 14, fontWeight: fontWeight.semibold, marginTop: 4, textTransform: 'uppercase' }}>&gt; 0.9 RISK</div>
           )}
         </div>
       </div>
@@ -226,68 +231,79 @@ function PreviousDiagnosesChecklist({ patient }: { patient: TeachingCase }) {
     /pregnancy|pregnant|gestational/i.test(p)
   );
 
-  const items: Array<{ label: string; active: boolean; subtext: string }> = [
+  // Each item: activeLabel shown in red with dot + subtext when active;
+  // inactiveLabel shown in black with no dot and no subtext when inactive.
+  const items: Array<{ activeLabel: string; inactiveLabel: string; active: boolean; subtext: string | null }> = [
     {
-      label: 'Prior PE Diagnosis',
+      activeLabel: 'Prior PE Diagnosis',
+      inactiveLabel: 'No prior PE diagnosis',
       active: patient.hasPriorVTE,
-      subtext: patient.hasPriorVTE ? (patient.priorPEDate ?? 'Yes') : 'N/A',
+      subtext: patient.hasPriorVTE ? (patient.priorPEDate ?? null) : null,
     },
     {
-      label: 'Cancer (last 6 months)',
+      activeLabel: 'Cancer (last 6 months)',
+      inactiveLabel: 'No cancer in the last 6 months',
       active: hasCancer,
-      subtext: hasCancer ? 'Active' : 'N/A',
+      subtext: null,
     },
     {
-      label: 'Surgeries (last 4 weeks)',
+      activeLabel: 'Surgeries (last 4 weeks)',
+      inactiveLabel: 'No surgeries in the last 4 weeks',
       active: patient.hasRecentSurgery,
-      subtext: patient.hasRecentSurgery ? 'Recent surgery' : 'N/A',
+      subtext: null,
     },
     {
-      label: 'Immobilizations (last 3 days)',
+      activeLabel: 'Immobilizations in the last 3 days',
+      inactiveLabel: 'No immobilizations in the last 3 days',
       active: !!patient.recentImmobilization,
       subtext: patient.recentImmobilization
         ? `${patient.recentImmobilization.date} · ${patient.recentImmobilization.description}`
-        : 'N/A',
+        : null,
     },
     {
-      label: 'Prior Thrombophilia',
+      activeLabel: 'Prior Thrombophilia',
+      inactiveLabel: 'No prior Thrombophilia',
       active: patient.priorThrombophilia ?? false,
-      subtext: (patient.priorThrombophilia ?? false) ? 'Yes' : 'N/A',
+      subtext: null,
     },
     {
-      label: 'Pregnancy',
+      activeLabel: 'Currently pregnant',
+      inactiveLabel: 'Not currently pregnant',
       active: isPregnant,
-      subtext: isPregnant ? 'Pregnant' : 'Not pregnant',
+      subtext: null,
     },
     {
-      label: 'Estrogen',
+      activeLabel: 'Currently on estrogen',
+      inactiveLabel: 'Not currently on estrogen',
       active: patient.usesEstrogen,
-      subtext: patient.usesEstrogen ? 'Yes' : 'No',
+      subtext: null,
     },
   ];
 
   return (
-    <div style={{ padding: 20 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 16 }}>
-        <ClipboardList size={16} color={GRAY} />
+    <div style={{ padding: 24 }}>
+      <div style={sectionHdrRow}>
+        <ClipboardList size={14} color={GRAY} />
         <span style={hdrStyle}>Previous Diagnoses Checklist</span>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {items.map((item) => (
-          <div key={item.label}>
-            {/* Name row: dot vertically centered with the name text */}
+          <div key={item.activeLabel}>
+            {/* Name row: dot + red label when active, gray label when not */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ flexShrink: 0, width: 10 }}>
                 {item.active && (
                   <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: RED }} />
                 )}
               </div>
-              <div style={{ ...listStyle, color: item.active ? RED : BLACK }}>
-                {item.label}
+              <div style={{ ...listStyle, color: item.active ? RED : GRAY, fontWeight: item.active ? fontWeight.medium : fontWeight.regular }}>
+                {item.active ? item.activeLabel : item.inactiveLabel}
               </div>
             </div>
-            {/* Subtext indented to align under the name */}
-            <div style={{ ...labelStyle, marginLeft: 18 }}>{item.subtext}</div>
+            {/* Subtext only when active and there's something to show */}
+            {item.active && item.subtext && (
+              <div style={{ ...labelStyle, marginLeft: 18 }}>{item.subtext}</div>
+            )}
           </div>
         ))}
       </div>
@@ -303,20 +319,20 @@ function AnticoagulantsSection({ patient }: { patient: TeachingCase }) {
   const anticoags = patient.medications.filter((m) => m.category === 'Anticoagulant');
 
   return (
-    <div style={{ padding: 20 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 16 }}>
-        <Pill size={16} color={GRAY} />
+    <div style={{ padding: 24 }}>
+      <div style={sectionHdrRow}>
+        <Pill size={14} color={GRAY} />
         <span style={hdrStyle}>Anticoagulants</span>
       </div>
       {anticoags.length === 0 ? (
         <div style={labelStyle}>None on file</div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {anticoags.map((med, i) => (
             <div key={i}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <div style={{ flexShrink: 0, width: 10, height: 10, borderRadius: '50%', backgroundColor: GREEN }} />
-                <div style={{ ...listStyle, color: GREEN }}>{med.name}</div>
+                <div style={{ ...listStyle, color: GREEN, fontWeight: fontWeight.medium }}>{med.name}</div>
               </div>
               <div style={{ ...labelStyle, marginLeft: 18 }}>{med.dose}</div>
             </div>
@@ -348,9 +364,9 @@ function PriorCTPAsSection({ patient }: { patient: TeachingCase }) {
   };
 
   return (
-    <div style={{ padding: 20 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 16 }}>
-        <Monitor size={16} color={GRAY} />
+    <div style={{ padding: 24 }}>
+      <div style={sectionHdrRow}>
+        <Monitor size={14} color={GRAY} />
         <span style={hdrStyle}>Prior CTPAs</span>
       </div>
       {!imaging ? (
@@ -358,13 +374,13 @@ function PriorCTPAsSection({ patient }: { patient: TeachingCase }) {
       ) : (
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={listStyle}>{formatImagingDate(imaging.date)}</span>
+            <span style={listStyle}>CTPA on {formatImagingDate(imaging.date)}</span>
             <span
               style={{
                 color: resultColors[imaging.result]?.color ?? GRAY,
                 backgroundColor: resultColors[imaging.result]?.bg ?? 'transparent',
-                fontSize: 13,
-                fontWeight: 500,
+                fontSize: 12,
+                fontWeight: fontWeight.regular,
                 padding: '2px 8px',
                 borderRadius: 4,
               }}
@@ -401,30 +417,30 @@ function CTPASafetyBarriersSection({ patient }: { patient: TeachingCase }) {
   const radCaution = totalRadiationExposureMSV !== undefined && totalRadiationExposureMSV > 50 && !radUnsafe;
 
   const badge = (label: string, color: string, bg: string) => (
-    <span style={{ color, backgroundColor: bg, fontSize: 13, fontWeight: 500, padding: '2px 8px', borderRadius: 4 }}>
+    <span style={{ color, backgroundColor: bg, fontSize: 12, fontWeight: fontWeight.regular, padding: '2px 8px', borderRadius: 4 }}>
       {label}
     </span>
   );
 
   return (
-    <div style={{ padding: 20 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 16 }}>
-        <ShieldAlert size={16} color={GRAY} />
+    <div style={{ padding: 24 }}>
+      <div style={sectionHdrRow}>
+        <ShieldAlert size={14} color={GRAY} />
         <span style={hdrStyle}>CTPA Safety Barriers</span>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {/* eFGR */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {/* eGFR */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={listStyle}>eFGR</span>
+            <span style={listStyle}>eGFR</span>
             {badge(
               renalSafe ? 'Safe' : renalCaution ? 'Caution' : 'Impaired',
               renalSafe ? GREEN  : renalCaution ? ORANGE    : RED,
               renalSafe ? LT_GRN : renalCaution ? LT_ORG   : LT_RED,
             )}
           </div>
-          <div style={{ ...labelStyle, marginTop: 2 }}>{egfr} · {egfrDescription}</div>
+          <div style={{ ...labelStyle, marginTop: 0 }}>{egfr} · {egfrDescription}</div>
         </div>
 
         {/* Contrast Allergy */}
@@ -432,12 +448,12 @@ function CTPASafetyBarriersSection({ patient }: { patient: TeachingCase }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={listStyle}>Contrast Allergy</span>
             {badge(
-              hasContrastAllergy ? 'ALLERGY' : 'None',
+              hasContrastAllergy ? 'Allergy' : 'None',
               hasContrastAllergy ? RED       : GREEN,
               hasContrastAllergy ? LT_RED    : LT_GRN,
             )}
           </div>
-          <div style={{ ...labelStyle, marginTop: 2 }}>
+          <div style={{ ...labelStyle, marginTop: 0 }}>
             {hasContrastAllergy ? 'Allergy documented' : 'No known allergy'}
           </div>
         </div>
@@ -453,7 +469,7 @@ function CTPASafetyBarriersSection({ patient }: { patient: TeachingCase }) {
                 radUnsafe ? LT_RED   : radCaution ? LT_ORG    : LT_GRN,
               )}
             </div>
-            <div style={{ ...labelStyle, marginTop: 2 }}>{totalRadiationExposureMSV} mSv in the last 4 weeks</div>
+            <div style={{ ...labelStyle, marginTop: 0 }}>{totalRadiationExposureMSV} mSv in the last 4 weeks</div>
           </div>
         )}
       </div>
@@ -470,142 +486,115 @@ const DDIMER_BUTTON_CASES: Record<number, 'case1' | 'case4'> = {
   0:  'case4',
 };
 
-export default function DashboardLayout({ caseIndex = 0 }: DashboardLayoutProps) {
+export default function DashboardLayout({ caseIndex = 0, hideDDimer = false }: DashboardLayoutProps) {
   const patient = TEACHING_CASES[caseIndex] || DEFAULT_CASE;
   const [showYearsModal, setShowYearsModal] = useState(false);
   const ddimerModalCase = DDIMER_BUTTON_CASES[caseIndex];
   const [isNarrow, setIsNarrow] = useState(window.innerWidth < 950);
+  const [isCompact, setIsCompact] = useState(window.innerWidth <= 620);
 
   useEffect(() => {
-    const handler = () => setIsNarrow(window.innerWidth < 950);
+    const handler = () => {
+      setIsNarrow(window.innerWidth < 950);
+      setIsCompact(window.innerWidth <= 620);
+    };
     window.addEventListener('resize', handler);
     return () => window.removeEventListener('resize', handler);
   }, []);
 
+  const cardStyle = {
+    backgroundColor: '#fff',
+    border: `1px solid ${BORDER}`,
+    borderRadius: 8,
+    overflow: 'hidden',
+  } as const;
+
+  // Shared patient header content
+  const patientHeader = (
+    <div style={{ display: 'flex', gap: 40 }}>
+      <div>
+        <div style={labelStyle}>Patient</div>
+        <div style={listStyle}>{patient.name} · {patient.age}{patient.gender === 'Male' ? 'M' : 'F'}</div>
+      </div>
+      <div>
+        <div style={labelStyle}>Chief Complaint</div>
+        <div style={listStyle}>{patient.chiefComplaint}</div>
+      </div>
+    </div>
+  );
+
+  // Shared D-Dimer button
+  const ddimerButton = ddimerModalCase && !hideDDimer && (
+    <button
+      onClick={() => setShowYearsModal(true)}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        padding: '8px 16px', fontSize: 14, fontWeight: 500,
+        color: '#375292', backgroundColor: '#eff6ff',
+        border: '1px solid #375292', borderRadius: 6, cursor: 'pointer',
+      }}
+    >
+      View D-Dimer Result
+    </button>
+  );
+
   return (
-    <div>
-      {/* ─── Outer panel ─────────────────────────────────────────── */}
-      <div style={{ backgroundColor: '#fff', border: `1px solid ${BORDER}`, borderRadius: 8, overflow: 'hidden' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {/* Patient header card */}
+      <div style={{ ...cardStyle, padding: 24 }}>
+        {patientHeader}
+      </div>
 
-        {/* ── Header ────────────────────────────────────────────── */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
-            padding: 20,
-            borderBottom: `1px solid ${BORDER}`,
-          }}
-        >
-          <div style={{ display: 'flex', gap: 40 }}>
-            {/* Patient */}
-            <div>
-              <div style={labelStyle}>PATIENT</div>
-              <div style={{ color: BLACK, fontSize: 16, fontWeight: 400 }}>
-                {patient.name} · {patient.age}{patient.gender === 'Male' ? 'M' : 'F'}
-              </div>
-            </div>
-            {/* Chief Complaint */}
-            <div>
-              <div style={labelStyle}>CHIEF COMPLAINT</div>
-              <div style={{ color: BLACK, fontSize: 16, fontWeight: 400 }}>
-                {patient.chiefComplaint}
-              </div>
-            </div>
+      {/* Vitals card */}
+      <div style={cardStyle}>
+        <VitalStabilitySection patient={patient} compact={isCompact} />
+      </div>
+
+      {/* Section cards */}
+      {isCompact ? (
+        <>
+          <div style={cardStyle}><HemodynamicStressSection patient={patient} /></div>
+          <div style={cardStyle}><PreviousDiagnosesChecklist patient={patient} /></div>
+          <div style={cardStyle}><AnticoagulantsSection patient={patient} /></div>
+          <div style={cardStyle}><PriorCTPAsSection patient={patient} /></div>
+          <div style={cardStyle}><CTPASafetyBarriersSection patient={patient} /></div>
+        </>
+      ) : isNarrow ? (
+        <>
+          <div style={cardStyle}><HemodynamicStressSection patient={patient} /></div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+            <div style={cardStyle}><PreviousDiagnosesChecklist patient={patient} /></div>
+            <div style={cardStyle}><AnticoagulantsSection patient={patient} /></div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+            <div style={cardStyle}><PriorCTPAsSection patient={patient} /></div>
+            <div style={cardStyle}><CTPASafetyBarriersSection patient={patient} /></div>
+          </div>
+        </>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 4 }}>
+          <div style={cardStyle}><PreviousDiagnosesChecklist patient={patient} /></div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+            <div style={cardStyle}><HemodynamicStressSection patient={patient} /></div>
+            <div style={cardStyle}><PriorCTPAsSection patient={patient} /></div>
+            <div style={cardStyle}><AnticoagulantsSection patient={patient} /></div>
+            <div style={cardStyle}><CTPASafetyBarriersSection patient={patient} /></div>
           </div>
         </div>
+      )}
 
-        {/* ── Row 1: Vital Stability (full width) ───────────────── */}
-        <div style={{ borderBottom: `1px solid ${BORDER}` }}>
-          <VitalStabilitySection patient={patient} />
+      {/* D-Dimer button */}
+      {ddimerModalCase && !hideDDimer && (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0 8px' }}>
+          {ddimerButton}
         </div>
+      )}
 
-        {/* ── Row 2: Three columns ────────────────────────────────── */}
-        {isNarrow ? (
-          <>
-            {/* Narrow: Hemodynamics full width */}
-            <div style={{ borderBottom: `1px solid ${BORDER}` }}>
-              <HemodynamicStressSection patient={patient} />
-            </div>
-            {/* Narrow: 2-col — Diagnoses | Anticoagulants */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: `1px solid ${BORDER}` }}>
-              <div style={{ borderRight: `1px solid ${BORDER}` }}>
-                <PreviousDiagnosesChecklist patient={patient} />
-              </div>
-              <div>
-                <AnticoagulantsSection patient={patient} />
-              </div>
-            </div>
-            {/* Narrow: 2-col — Prior CTPAs | Safety Barriers */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: `1px solid ${BORDER}` }}>
-              <div style={{ borderRight: `1px solid ${BORDER}` }}>
-                <PriorCTPAsSection patient={patient} />
-              </div>
-              <div>
-                <CTPASafetyBarriersSection patient={patient} />
-              </div>
-            </div>
-          </>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', borderBottom: `1px solid ${BORDER}` }}>
-            {/* Col 1: Previous Diagnoses Checklist */}
-            <div style={{ borderRight: `1px solid ${BORDER}` }}>
-              <PreviousDiagnosesChecklist patient={patient} />
-            </div>
-            {/* Col 2: Hemodynamic Stress (top) + Anticoagulants (bottom) — equal halves */}
-            <div style={{ borderRight: `1px solid ${BORDER}`, display: 'flex', flexDirection: 'column', height: '100%' }}>
-              <div style={{ flex: 1, minHeight: 0, borderBottom: `1px solid ${BORDER}` }}>
-                <HemodynamicStressSection patient={patient} />
-              </div>
-              <div style={{ flex: 1, minHeight: 0 }}>
-                <AnticoagulantsSection patient={patient} />
-              </div>
-            </div>
-            {/* Col 3: Prior CTPAs (top) + Safety Barriers (bottom) — equal halves */}
-            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-              <div style={{ flex: 1, minHeight: 0, borderBottom: `1px solid ${BORDER}` }}>
-                <PriorCTPAsSection patient={patient} />
-              </div>
-              <div style={{ flex: 1, minHeight: 0 }}>
-                <CTPASafetyBarriersSection patient={patient} />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ── D-Dimer Button (Case 3 & 4 only) ─────────────────── */}
-        {ddimerModalCase && (
-          <div
-            style={{ display: 'flex', justifyContent: 'center', padding: '12px 16px', borderBottom: `1px solid ${BORDER}` }}
-          >
-            <button
-              onClick={() => setShowYearsModal(true)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                padding: '8px 16px',
-                fontSize: 14,
-                fontWeight: 500,
-                color: '#375292',
-                backgroundColor: '#eff6ff',
-                border: '1px solid #375292',
-                borderRadius: 6,
-                cursor: 'pointer',
-              }}
-            >
-              View D-Dimer Result
-            </button>
-          </div>
-        )}
-
-        {/* ── Footer ────────────────────────────────────────────── */}
-        <div style={{ padding: '10px 16px', textAlign: 'center' }}>
-          <span style={{ ...labelStyle, fontSize: 11, letterSpacing: '0.06em' }}>
-            LUMINUR PE CALCULATOR · DATA AGGREGATION TOOL · NOT A DIAGNOSTIC DEVICE
-          </span>
-        </div>
-
+      {/* Footer */}
+      <div style={{ padding: '8px 16px', textAlign: 'center' }}>
+        <span style={{ ...labelStyle, fontSize: 11, letterSpacing: '0.06em' }}>
+          LUMINUR PE CALCULATOR · DATA AGGREGATION TOOL · NOT A DIAGNOSTIC DEVICE
+        </span>
       </div>
 
       {/* YEARS Calculator Modal */}

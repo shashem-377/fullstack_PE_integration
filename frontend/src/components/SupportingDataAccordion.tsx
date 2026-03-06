@@ -18,7 +18,7 @@ interface AccordionSection {
  * SupportingDataAccordion - Layer 2: Optional drilldown data
  * Single accordion with expandable sections for:
  * - Vitals trend
- * - D-dimer trend  
+ * - D-Dimer trend  
  * - Prior imaging
  * - Medications/coags
  * - Diagnoses
@@ -134,7 +134,7 @@ export default function SupportingDataAccordion({
 
   const sections: { id: string; label: string }[] = [
     { id: 'vitals', label: 'Vitals Trend' },
-    { id: 'ddimer', label: 'D-dimer Trend' },
+    { id: 'ddimer', label: 'D-Dimer Trend' },
     { id: 'imaging', label: 'Prior Imaging' },
     { id: 'meds', label: 'Medications / Anticoagulation' },
     { id: 'diagnoses', label: 'Diagnoses' }
@@ -205,12 +205,12 @@ function renderVitalsSection(data: Record<string, unknown>) {
 function renderDdimerSection(data: Record<string, unknown>) {
   const series = data.series as unknown[] | undefined;
   if (!series || series.length === 0) {
-    return <div className="section-empty">No D-dimer results found</div>;
+    return <div className="section-empty">No D-Dimer results found</div>;
   }
   
   return (
     <div className="ddimer-summary">
-      <div className="summary-text">{series.length} D-dimer result(s) in last 30 days</div>
+      <div className="summary-text">{series.length} D-Dimer result(s) in last 30 days</div>
       <div className="ddimer-list">
         {(series as Array<{ value: number; time: string; unit?: string }>).slice(0, 5).map((item, i) => (
           <div key={i} className="ddimer-item">

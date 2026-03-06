@@ -211,7 +211,7 @@ export const HIGH_RISK_PATIENT: RichDemoPatient = {
     probability: 0.234,
     threshold: 0.08,
     decision: 'continue_workup',
-    explanation: 'HIGH probability of PE (23.4%). Multiple concerning features: tachycardia (HR 105), hypoxia (SpO2 91%), elevated D-dimer (1.85 µg/mL), prior DVT, and immobilization. Anticoagulation gap detected (15 days). CONTRAST CAUTION: GFR 45, Iodine allergy present.',
+    explanation: 'HIGH probability of PE (23.4%). Multiple concerning features: tachycardia (HR 105), hypoxia (SpO2 91%), elevated D-Dimer (1.85 µg/mL), prior DVT, and immobilization. Anticoagulation gap detected (15 days). CONTRAST CAUTION: GFR 45, Iodine allergy present.',
     feature_summary: {
       age: 62,
       gender_male: 1,
@@ -331,7 +331,7 @@ export const LOW_RISK_PATIENT: RichDemoPatient = {
     probability: 0.028,
     threshold: 0.08,
     decision: 'rule_out',
-    explanation: 'LOW probability of PE (2.8%). PERC negative. Normal vitals, low D-dimer (0.32 µg/mL), no risk factors. PE may be safely ruled out in appropriate clinical context.',
+    explanation: 'LOW probability of PE (2.8%). PERC negative. Normal vitals, low D-Dimer (0.32 µg/mL), no risk factors. PE may be safely ruled out in appropriate clinical context.',
     feature_summary: {
       age: 35,
       gender_male: 0,
@@ -468,7 +468,7 @@ export const WARFARIN_PATIENT: RichDemoPatient = {
     probability: 0.156,
     threshold: 0.08,
     decision: 'continue_workup',
-    explanation: 'Moderate probability of PE (15.6%). Prior PE history, D-dimer at age-adjusted threshold (0.72 µg/mL for age 72). WARNING: INR 1.4 is subtherapeutic - patient NOT fully anticoagulated.',
+    explanation: 'Moderate probability of PE (15.6%). Prior PE history, D-Dimer at age-adjusted threshold (0.72 µg/mL for age 72). WARNING: INR 1.4 is subtherapeutic - patient NOT fully anticoagulated.',
     feature_summary: {
       age: 72,
       gender_male: 1,
@@ -592,7 +592,7 @@ export const RECENT_CTA_PATIENT: RichDemoPatient = {
     probability: 0.089,
     threshold: 0.08,
     decision: 'continue_workup',
-    explanation: 'Borderline probability of PE (8.9%). Elevated D-dimer (0.68 µg/mL above age-adjusted threshold 0.55). ALERT: CTA performed 6 hours ago was NEGATIVE. Consider if repeat imaging is warranted.',
+    explanation: 'Borderline probability of PE (8.9%). Elevated D-Dimer (0.68 µg/mL above age-adjusted threshold 0.55). ALERT: CTA performed 6 hours ago was NEGATIVE. Consider if repeat imaging is warranted.',
     feature_summary: {
       age: 55,
       gender_male: 0,

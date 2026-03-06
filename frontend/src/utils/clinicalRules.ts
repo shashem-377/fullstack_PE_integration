@@ -1,9 +1,11 @@
 /**
  * Clinical Rules Engine for Luminur HUD Dashboard
- * 
+ *
  * Centralized logic for safety badges and clinical decision support.
  * All functions are pure and deterministic for easy testing.
  */
+
+import { CT } from './clinicalThresholds.generated';
 
 // ===========================================================================
 // Types
@@ -101,7 +103,7 @@ export function calculateRenalSafety(
 
   // GFR-based assessment (preferred)
   if (g !== null) {
-    if (g < 30) {
+    if (g < CT.gfr.CAUTION_MIN) {
       return {
         status: 'stop',
         gfr: g,
@@ -110,7 +112,7 @@ export function calculateRenalSafety(
         color: 'red'
       };
     }
-    if (g < 60) {
+    if (g < CT.gfr.SAFE_MIN) {
       return {
         status: 'caution',
         gfr: g,
@@ -374,7 +376,7 @@ export function isDuplicateScan(
 // ===========================================================================
 
 /**
- * Calculate age-adjusted D-dimer threshold
+ * Calculate age-adjusted D-Dimer threshold
  * 
  * Rules:
  * - Age ≤ 50: Threshold = 0.50 µg/mL (500 ng/mL)
@@ -392,11 +394,12 @@ export function calculateDDimerThreshold(
 
   const patientAge = age ?? 50; // Default to 50 if unknown
   const isAgeAdjusted = patientAge > 50;
-  
-  // Calculate threshold
-  const threshold = isAgeAdjusted 
-    ? patientAge * 0.01 
-    : 0.50;
+
+  // Thresholds sourced from CT (clinical-thresholds.json via codegen)
+  const highScoreThresholdUgMl = CT.years.DDIMER_HIGH_SCORE_NGML / 1000; // 500 ng/mL → 0.5 µg/mL
+  const threshold = isAgeAdjusted
+    ? patientAge * (CT.years.DDIMER_HIGH_SCORE_NGML / 1000 / 50) // age × 0.01 µg/mL
+    : highScoreThresholdUgMl;
 
   const isElevated = normalizedValue > threshold;
   const percentOfThreshold = threshold > 0 

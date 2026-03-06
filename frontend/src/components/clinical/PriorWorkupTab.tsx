@@ -22,7 +22,7 @@ interface ImagingStudy {
  * Prior Workup Tab - Historical PE workup data.
  * 
  * Shows:
- * - D-dimer trend (last 30 days)
+ * - D-Dimer trend (last 30 days)
  * - Previous PE-relevant imaging (CTPA, V/Q)
  */
 export default function PriorWorkupTab({ patientId }: PriorWorkupTabProps) {
@@ -39,7 +39,7 @@ export default function PriorWorkupTab({ patientId }: PriorWorkupTabProps) {
     setLoading(true);
     
     try {
-      // Load D-dimer and imaging in parallel
+      // Load D-Dimer and imaging in parallel
       const [ddimerRes, imagingRes] = await Promise.all([
         fetch(`/api/clinical/ddimer?patient_id=${patientId}&days=30`, { credentials: 'include' }),
         fetch(`/api/clinical/imaging?patient_id=${patientId}&years=5&type=all`, { credentials: 'include' })
@@ -72,14 +72,14 @@ export default function PriorWorkupTab({ patientId }: PriorWorkupTabProps) {
     );
   }
 
-  // Latest D-dimer
+  // Latest D-Dimer
   const lastDdimer = ddimer.length > 0 ? ddimer[0] : null;
 
   return (
     <div className="prior-workup-tab">
-      {/* D-dimer Section */}
+      {/* D-Dimer Section */}
       <div className="ddimer-section">
-        <div className="section-label">D-dimer (Last 30 Days)</div>
+        <div className="section-label">D-Dimer (Last 30 Days)</div>
         
         {lastDdimer ? (
           <div className="ddimer-content">
@@ -123,7 +123,7 @@ export default function PriorWorkupTab({ patientId }: PriorWorkupTabProps) {
             )}
           </div>
         ) : (
-          <div className="no-data">No D-dimer results found in last 30 days</div>
+          <div className="no-data">No D-Dimer results found in last 30 days</div>
         )}
       </div>
 

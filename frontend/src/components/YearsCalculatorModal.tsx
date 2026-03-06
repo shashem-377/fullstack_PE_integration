@@ -3,11 +3,11 @@
  * Uses design system tokens from src/styles/tokens.ts
  */
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, Check, CheckCircle, AlertTriangle, ClipboardCopy, Droplets } from 'lucide-react';
 import { colors, fontSize, fontWeight } from '../styles/tokens';
 
-const { black: BLACK, gray: GRAY, border: BORDER, green: GREEN, lightGreen: LT_GRN, red: RED, lightRed: LT_RED, lightBlue: LT_BLUE } = colors;
+const { black: BLACK, gray: GRAY, border: BORDER, inputBorder: INPUT_BORDER, green: GREEN, lightGreen: LT_GRN, red: RED, lightRed: LT_RED, lightBlue: LT_BLUE } = colors;
 
 type FactorValue = true | false | null;
 
@@ -41,11 +41,13 @@ const CASES = {
 interface YearsCalculatorModalProps {
   initialCase: 'case1' | 'case4';
   onClose: () => void;
+  initialFactors?: Factors;
 }
 
-export default function YearsCalculatorModal({ initialCase, onClose }: YearsCalculatorModalProps) {
-  const [factors, setFactors] = useState<Factors>(CASES[initialCase].defaultFactors);
+export default function YearsCalculatorModal({ initialCase, onClose, initialFactors }: YearsCalculatorModalProps) {
+  const [factors, setFactors] = useState<Factors>(initialFactors ?? CASES[initialCase].defaultFactors);
   const [copied, setCopied] = useState(false);
+  const resultRef = useRef<HTMLDivElement>(null);
 
   const caseData = CASES[initialCase];
   const { dDimer } = caseData;
@@ -54,6 +56,15 @@ export default function YearsCalculatorModal({ initialCase, onClose }: YearsCalc
   const yearsScore = Object.values(factors).filter((v) => v === true).length;
   const threshold = yearsScore === 0 ? 1000 : 500;
   const result = allAnswered ? (dDimer < threshold ? 'rule-out' : 'no-rule-out') : null;
+
+  // Smooth scroll to result when all questions answered
+  useEffect(() => {
+    if (allAnswered && resultRef.current) {
+      setTimeout(() => {
+        resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 80);
+    }
+  }, [allAnswered]);
 
   const setFactor = (key: keyof Factors, value: boolean) => {
     setFactors((prev) => ({ ...prev, [key]: value }));
@@ -123,12 +134,12 @@ export default function YearsCalculatorModal({ initialCase, onClose }: YearsCalc
           {/* Patient header */}
           <div className="flex gap-10 mb-6">
             <div>
-              <p style={{ fontSize: fontSize.label, color: GRAY, marginBottom: 2, textTransform: 'uppercase' }}>Patient</p>
-              <p style={{ fontSize: fontSize.body, color: BLACK }}>{caseData.patient}</p>
+              <p style={{ fontSize: fontSize.label, color: GRAY, marginBottom: 2 }}>Patient</p>
+              <p style={{ fontSize: fontSize.label, color: BLACK }}>{caseData.patient}</p>
             </div>
             <div>
-              <p style={{ fontSize: fontSize.label, color: GRAY, marginBottom: 2, textTransform: 'uppercase' }}>Chief Complaint</p>
-              <p style={{ fontSize: fontSize.body, color: BLACK }}>{caseData.complaint}</p>
+              <p style={{ fontSize: fontSize.label, color: GRAY, marginBottom: 2 }}>Chief Complaint</p>
+              <p style={{ fontSize: fontSize.label, color: BLACK }}>{caseData.complaint}</p>
             </div>
           </div>
 
@@ -169,10 +180,10 @@ export default function YearsCalculatorModal({ initialCase, onClose }: YearsCalc
                       className="flex-1 h-[52px] transition-colors flex items-center justify-center gap-1.5 rounded-l"
                       style={{
                         fontSize: fontSize.body,
-                        fontWeight: fontWeight.medium,
-                        borderTop: `1px solid ${factors[q.key] === true ? '#375292' : '#EEEEEE'}`,
-                        borderLeft: `1px solid ${factors[q.key] === true ? '#375292' : '#EEEEEE'}`,
-                        borderBottom: `1px solid ${factors[q.key] === true ? '#375292' : '#EEEEEE'}`,
+                        fontWeight: factors[q.key] === true ? fontWeight.medium : fontWeight.regular,
+                        borderTop: `1px solid ${factors[q.key] === true ? '#375292' : INPUT_BORDER}`,
+                        borderLeft: `1px solid ${factors[q.key] === true ? '#375292' : INPUT_BORDER}`,
+                        borderBottom: `1px solid ${factors[q.key] === true ? '#375292' : INPUT_BORDER}`,
                         borderRight: factors[q.key] === true ? '1px solid #375292' : 'none',
                         backgroundColor: factors[q.key] === true ? '#eff6ff' : 'white',
                         color: factors[q.key] === true ? '#375292' : GRAY,
@@ -188,11 +199,11 @@ export default function YearsCalculatorModal({ initialCase, onClose }: YearsCalc
                       className="flex-1 h-[52px] transition-colors flex items-center justify-center gap-1.5 rounded-r"
                       style={{
                         fontSize: fontSize.body,
-                        fontWeight: fontWeight.medium,
-                        borderTop: `1px solid ${factors[q.key] === false ? '#375292' : '#EEEEEE'}`,
-                        borderRight: `1px solid ${factors[q.key] === false ? '#375292' : '#EEEEEE'}`,
-                        borderBottom: `1px solid ${factors[q.key] === false ? '#375292' : '#EEEEEE'}`,
-                        borderLeft: factors[q.key] === true ? 'none' : `1px solid ${factors[q.key] === false ? '#375292' : '#EEEEEE'}`,
+                        fontWeight: factors[q.key] === false ? fontWeight.medium : fontWeight.regular,
+                        borderTop: `1px solid ${factors[q.key] === false ? '#375292' : INPUT_BORDER}`,
+                        borderRight: `1px solid ${factors[q.key] === false ? '#375292' : INPUT_BORDER}`,
+                        borderBottom: `1px solid ${factors[q.key] === false ? '#375292' : INPUT_BORDER}`,
+                        borderLeft: factors[q.key] === true ? 'none' : `1px solid ${factors[q.key] === false ? '#375292' : INPUT_BORDER}`,
                         backgroundColor: factors[q.key] === false ? '#eff6ff' : 'white',
                         color: factors[q.key] === false ? '#375292' : GRAY,
                         cursor: 'pointer',
@@ -209,7 +220,7 @@ export default function YearsCalculatorModal({ initialCase, onClose }: YearsCalc
 
           {/* Result card — above bar chart */}
           {allAnswered && (
-            <div className="pt-8 pb-2">
+            <div ref={resultRef} className="pt-8 pb-2">
               <div
                 className="rounded-lg p-5"
                 style={{

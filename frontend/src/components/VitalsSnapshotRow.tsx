@@ -17,7 +17,7 @@ interface VitalsSnapshotRowProps {
 }
 
 /**
- * VitalsSnapshotRow - Compact row showing latest vitals + D-dimer
+ * VitalsSnapshotRow - Compact row showing latest vitals + D-Dimer
  * Shows "—" for missing values, never crashes on null
  * Professional styling, no emojis
  */
@@ -63,9 +63,9 @@ export default function VitalsSnapshotRow({ vitals, ddimer, dataSource }: Vitals
         
         <div className="vital-divider" />
         
-        {/* D-dimer */}
+        {/* D-Dimer */}
         <div className={`vital-item ${ddimerVal && isVitalAbnormal('ddimer', ddimerVal) ? 'abnormal' : ''} ${ddimerVal === null || ddimerVal === undefined ? 'missing' : ''}`}>
-          <span className="vital-label">D-dimer</span>
+          <span className="vital-label">D-Dimer</span>
           <span className="vital-value">
             {ddimerVal !== null && ddimerVal !== undefined && typeof ddimerVal === 'number'
               ? formatVitalValue(ddimerVal, 2)

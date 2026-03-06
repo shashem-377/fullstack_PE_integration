@@ -235,8 +235,8 @@ const CASE_001_PNEUMONIA: TeachingCase = {
   priorImaging: {
     modality: 'CTPA',
     date: '2024-02-15',
-    result: 'Negative',
-    reportSummary: 'No pulmonary embolism. Mild atelectasis at lung bases.',
+    result: 'Positive',
+    reportSummary: 'Acute pulmonary embolism identified. Filling defect in the right lower lobe segmental artery. No evidence of right heart strain.',
   },
   hasChronicRespiratoryDisease: false,
   hasPriorVTE: true,

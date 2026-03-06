@@ -245,9 +245,9 @@ export default function SupportingDataDrawer({ patientId, isAuthenticated }: Sup
                   <div className="loading-skeleton">Loading workup data...</div>
                 ) : (
                   <div className="workup-content">
-                    {/* D-dimer History */}
+                    {/* D-Dimer History */}
                     <div className="ddimer-section">
-                      <div className="section-title">D-dimer (Last 30 Days)</div>
+                      <div className="section-title">D-Dimer (Last 30 Days)</div>
                       {ddimer.length > 0 ? (
                         <div className="ddimer-list">
                           {ddimer.slice(0, 5).map((d, i) => (
@@ -261,7 +261,7 @@ export default function SupportingDataDrawer({ patientId, isAuthenticated }: Sup
                           ))}
                         </div>
                       ) : (
-                        <div className="no-data">No D-dimer results</div>
+                        <div className="no-data">No D-Dimer results</div>
                       )}
                     </div>
                     

@@ -1,13 +1,15 @@
 /**
  * Clinical Logic Engine for Luminur PE Decision Support
- * 
+ *
  * Centralized calculations for:
  * - Medication adherence analysis
  * - Shock Index calculation
- * - Age-adjusted D-dimer thresholding
+ * - Age-adjusted D-Dimer thresholding
  * - Wells/PERC score calculations
  * - GFR estimation
  */
+
+import { CT } from './clinicalThresholds.generated';
 
 // ===========================================================================
 // Types
@@ -278,10 +280,10 @@ export function calculateShockIndex(vitals: VitalSigns): ShockIndexResult | null
   let risk: 'normal' | 'elevated' | 'high';
   let description: string;
 
-  if (value <= 0.7) {
+  if (value <= CT.shockIndex.SAFE_MAX) {
     risk = 'normal';
     description = 'Normal hemodynamic status';
-  } else if (value <= 1.0) {
+  } else if (value <= CT.shockIndex.CAUTION_MAX) {
     risk = 'elevated';
     description = 'Elevated - concerning for hemodynamic compromise';
   } else {
@@ -301,7 +303,7 @@ export function calculateShockIndex(vitals: VitalSigns): ShockIndexResult | null
 // ===========================================================================
 
 /**
- * Calculate age-adjusted D-dimer threshold
+ * Calculate age-adjusted D-Dimer threshold
  * 
  * Logic:
  * - If Age > 50: Threshold = Age × 10 ng/mL (or Age × 0.01 µg/mL)
@@ -329,7 +331,7 @@ export function calculateAgeAdjustedDDimerThreshold(
 }
 
 /**
- * Evaluate D-dimer with age-adjusted threshold
+ * Evaluate D-Dimer with age-adjusted threshold
  */
 export function evaluateDDimer(
   value: number,
@@ -630,7 +632,7 @@ export function calculateWellsScore(inputs: WellsScoreInputs): {
 /**
  * Calculate PERC Rule
  * 
- * All 8 criteria must be NEGATIVE to rule out PE without D-dimer:
+ * All 8 criteria must be NEGATIVE to rule out PE without D-Dimer:
  * 1. Age < 50
  * 2. Heart rate < 100
  * 3. SpO2 ≥ 95%

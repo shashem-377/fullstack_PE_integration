@@ -10,6 +10,7 @@ from fastapi.responses import RedirectResponse, JSONResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, Dict, Any, List
+from pathlib import Path
 import os
 import logging
 import traceback
@@ -2219,6 +2220,229 @@ async def get_auth_diagnostics(request: Request):
     logger.info("=" * 60)
     
     return diagnostics
+
+
+
+# ---------------------------------------------------------------------------
+# Docs file editing
+# ---------------------------------------------------------------------------
+
+_DOCS_ROOT = Path(__file__).parent.parent / "frontend" / "src"
+_EDITABLE_DOCS: Dict[str, Path] = {
+    "clinical-thresholds": _DOCS_ROOT / "utils" / "CLINICAL_THRESHOLDS.md",
+    "fhir-data": _DOCS_ROOT / "docs" / "fhir-data.md",
+}
+
+class DocContent(BaseModel):
+    content: str
+
+@app.get("/api/docs/{doc_id}")
+async def get_doc(doc_id: str):
+    """Return the raw markdown content of an editable doc file."""
+    path = _EDITABLE_DOCS.get(doc_id)
+    if path is None:
+        raise HTTPException(status_code=404, detail=f"Unknown doc: {doc_id}")
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="File not found on disk")
+    return {"content": path.read_text(encoding="utf-8")}
+
+@app.put("/api/docs/{doc_id}")
+async def update_doc(doc_id: str, body: DocContent):
+    """Overwrite an editable doc file with new markdown content."""
+    path = _EDITABLE_DOCS.get(doc_id)
+    if path is None:
+        raise HTTPException(status_code=404, detail=f"Unknown doc: {doc_id}")
+    path.write_text(body.content, encoding="utf-8")
+    return {"ok": True}
+
+
+# ---------------------------------------------------------------------------
+# PRD (structured JSON document)
+# ---------------------------------------------------------------------------
+
+_PRD_PATH = _DOCS_ROOT / "docs" / "prd.json"
+
+@app.get("/api/prd")
+async def get_prd():
+    """Return the PRD JSON document."""
+    import json as _json
+    if not _PRD_PATH.exists():
+        raise HTTPException(status_code=404, detail="PRD file not found on disk")
+    return _json.loads(_PRD_PATH.read_text(encoding="utf-8"))
+
+@app.put("/api/prd")
+async def update_prd(request: Request):
+    """Save the PRD JSON document."""
+    import json as _json
+    body = await request.json()
+    _PRD_PATH.write_text(_json.dumps(body, indent=2, ensure_ascii=False), encoding="utf-8")
+    return {"ok": True}
+
+# ---------------------------------------------------------------------------
+# FHIR Data (structured JSON document)
+# ---------------------------------------------------------------------------
+
+_FHIR_DATA_PATH = _DOCS_ROOT / "docs" / "fhir-data.json"
+
+@app.get("/api/fhir-data")
+async def get_fhir_data():
+    """Return the FHIR field reference JSON document."""
+    import json as _json
+    if not _FHIR_DATA_PATH.exists():
+        raise HTTPException(status_code=404, detail="FHIR data file not found on disk")
+    return _json.loads(_FHIR_DATA_PATH.read_text(encoding="utf-8"))
+
+@app.put("/api/fhir-data")
+async def update_fhir_data(request: Request):
+    """Save the FHIR field reference JSON document."""
+    import json as _json
+    body = await request.json()
+    _FHIR_DATA_PATH.write_text(_json.dumps(body, indent=2, ensure_ascii=False), encoding="utf-8")
+    return {"ok": True}
+
+# Clinical Thresholds (structured JSON document)
+# ---------------------------------------------------------------------------
+
+_CT_PATH = _DOCS_ROOT / "docs" / "clinical-thresholds.json"
+
+@app.get("/api/clinical-thresholds")
+async def get_clinical_thresholds():
+    """Return the Clinical Thresholds JSON document."""
+    import json as _json
+    if not _CT_PATH.exists():
+        raise HTTPException(status_code=404, detail="Clinical thresholds file not found on disk")
+    return _json.loads(_CT_PATH.read_text(encoding="utf-8"))
+
+_CT_GENERATED_TS = _DOCS_ROOT / "utils" / "clinicalThresholds.generated.ts"
+
+def _generate_ct_ts(data: dict) -> None:
+    """Parse clinical-thresholds.json and write clinicalThresholds.generated.ts."""
+    import re as _re, datetime as _dt
+
+    def _first_num(s: str) -> float:
+        # Prefer number immediately after a comparison operator (< > ≤ ≥)
+        m = _re.search(r'[<>≤≥]\s*(\d+\.?\d*)', s)
+        if m:
+            return float(m.group(1))
+        m = _re.search(r'\d+\.?\d*', s)
+        return float(m.group()) if m else 0.0
+
+    def _all_nums(s: str) -> list:
+        # Extract all numbers that appear after comparison operators
+        return [float(x) for x in _re.findall(r'[<>≤≥]\s*(\d+\.?\d*)', s)]
+
+    try:
+        # Vitals
+        vital_map = {v['vital']: _first_num(v['condition']) for v in data['vitalStability']['vitals']}
+        hr_alert   = vital_map.get('HR', 100)
+        sbp_alert  = vital_map.get('BP (SBP)', 90)
+        spo2_alert = vital_map.get('SPO2', 95)
+        rr_alert   = vital_map.get('RR', 20)
+        temp_alert = vital_map.get('TEMP', 38)
+
+        # Shock index — extract upper bound of each state
+        shock_states = data['hemodynamicStress']['shockStates']
+        safe_si    = next(s for s in shock_states if s['status'] == 'Safe')
+        caution_si = next(s for s in shock_states if s['status'] == 'Caution')
+        si_safe_max    = max(_all_nums(safe_si['condition']))     # "≤ 0.7" → 0.7
+        si_caution_max = max(_all_nums(caution_si['condition']))  # "> 0.7 and ≤ 0.9" → 0.9
+
+        # GFR — extract lower bound of Safe/Caution states
+        gfr_states  = data['ctpaSafety']['egfr']['badgeStates']
+        safe_gfr    = next(s for s in gfr_states if s['badgeLabel'] == 'Safe')
+        caution_gfr = next(s for s in gfr_states if s['badgeLabel'] == 'Caution')
+        gfr_safe_min    = _first_num(safe_gfr['condition'])    # "≥ 60" → 60
+        gfr_caution_min = _first_num(caution_gfr['condition']) # "≥ 30 and < 60" → 30
+
+        # YEARS D-dimer thresholds
+        yt = data['years']['thresholds']
+        zero_t = next(t for t in yt if t['score'] == '0')
+        high_t = next(t for t in yt if t['score'] != '0')
+        ddimer_zero = _first_num(zero_t['threshold'])  # "1000 ng/mL" → 1000
+        ddimer_high = _first_num(high_t['threshold'])  # "500 ng/mL"  → 500
+
+        now = _dt.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+
+        ts = f"""// AUTO-GENERATED — do not edit manually.
+// Source: frontend/src/docs/clinical-thresholds.json
+// Last synced: {now}
+// To update: edit thresholds in the Clinical Thresholds doc tab — changes sync here automatically.
+
+export const CT = {{
+  vitals: {{
+    /** Alert fires when HR exceeds this value (bpm) */
+    HR_ALERT: {hr_alert},
+    /** Alert fires when SBP falls below this value (mmHg) */
+    SBP_ALERT: {sbp_alert},
+    /** Alert fires when SpO2 falls below this value (%) */
+    SPO2_ALERT: {spo2_alert},
+    /** Alert fires when RR exceeds this value (/min) */
+    RR_ALERT: {rr_alert},
+    /** Alert fires when temperature exceeds this value (°C) */
+    TEMP_ALERT: {temp_alert},
+  }},
+  shockIndex: {{
+    /** Shock index ≤ this value → Safe */
+    SAFE_MAX: {si_safe_max},
+    /** Shock index ≤ this value → Caution (above SAFE_MAX) */
+    CAUTION_MAX: {si_caution_max},
+  }},
+  gfr: {{
+    /** GFR ≥ this value → Safe for contrast */
+    SAFE_MIN: {gfr_safe_min},
+    /** GFR ≥ this value → Caution (below SAFE_MIN) */
+    CAUTION_MIN: {gfr_caution_min},
+  }},
+  years: {{
+    /** D-dimer threshold (ng/mL) when YEARS score = 0 */
+    DDIMER_ZERO_SCORE_NGML: {ddimer_zero},
+    /** D-dimer threshold (ng/mL) when YEARS score ≥ 1 */
+    DDIMER_HIGH_SCORE_NGML: {ddimer_high},
+  }},
+}} as const;
+
+export type ClinicalThresholds = typeof CT;
+"""
+        _CT_GENERATED_TS.write_text(ts, encoding="utf-8")
+    except Exception as e:
+        print(f"[codegen] Failed to generate clinicalThresholds.generated.ts: {e}")
+
+
+@app.on_event("startup")
+async def _startup_generate_ct():
+    """Generate clinicalThresholds.generated.ts from JSON on server start."""
+    import json as _json
+    if _CT_PATH.exists():
+        _generate_ct_ts(_json.loads(_CT_PATH.read_text(encoding="utf-8")))
+
+
+@app.put("/api/clinical-thresholds")
+async def update_clinical_thresholds(request: Request):
+    """Save the Clinical Thresholds JSON document and regenerate the TS constants file."""
+    import json as _json
+    body = await request.json()
+    _CT_PATH.write_text(_json.dumps(body, indent=2, ensure_ascii=False), encoding="utf-8")
+    _generate_ct_ts(body)
+    return {"ok": True}
+
+
+_CDS_PATH = Path(__file__).parent.parent / "frontend" / "src" / "docs" / "cds-card-logic.json"
+
+@app.get("/api/cds-card-logic")
+async def get_cds_card_logic():
+    """Return the CDS Card Logic JSON document."""
+    import json as _json
+    if not _CDS_PATH.exists():
+        raise HTTPException(status_code=404, detail="CDS card logic file not found on disk")
+    return _json.loads(_CDS_PATH.read_text(encoding="utf-8"))
+
+@app.put("/api/cds-card-logic")
+async def update_cds_card_logic(request: Request):
+    """Save the CDS Card Logic JSON document."""
+    import json as _json
+    body = await request.json()
+    _CDS_PATH.write_text(_json.dumps(body, indent=2, ensure_ascii=False), encoding="utf-8")
+    return {"ok": True}
 
 
 @app.get("/")

@@ -16,7 +16,7 @@ type TabId = 'essentials' | 'meds' | 'workup';
  * Shows three tabs:
  * - Essentials: Anticoag status, PE mimic diagnoses, vitals chart
  * - Meds & Coags: Detailed medication list, INR trend
- * - Prior Workup: D-dimer trend, imaging studies
+ * - Prior Workup: D-Dimer trend, imaging studies
  */
 export default function ClinicalPanel({ patientId, isAuthenticated }: ClinicalPanelProps) {
   const [activeTab, setActiveTab] = useState<TabId>('essentials');

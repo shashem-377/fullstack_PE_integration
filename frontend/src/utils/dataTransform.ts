@@ -28,7 +28,7 @@ const FIELD_DISPLAY_NAMES: Record<string, string> = {
   triage_sbp: 'Systolic Blood Pressure',
   triage_dbp: 'Diastolic Blood Pressure',
   triage_temp: 'Temperature',
-  d_dimer: 'D-dimer',
+  d_dimer: 'D-Dimer',
   troponin: 'Troponin',
   creatinine: 'Creatinine',
   wells_score: 'Wells Score',
@@ -50,7 +50,7 @@ const TROUBLESHOOTING_HINTS: Record<string, string> = {
   triage_rr: 'Respiratory rate may not have been recorded during triage.',
   triage_o2sat: 'SpO₂ may not have been recorded. Check if pulse oximetry was performed.',
   triage_sbp: 'Blood pressure may not have been recorded during triage.',
-  d_dimer: 'D-dimer lab may not have been ordered or resulted yet.',
+  d_dimer: 'D-Dimer lab may not have been ordered or resulted yet.',
   troponin: 'Troponin lab may not have been ordered or resulted yet.',
   creatinine: 'Basic metabolic panel may not have been ordered or resulted yet.'
 };
@@ -160,19 +160,19 @@ export function deriveKeyContributors(features: Record<string, any>, decision: D
     }
   }
   
-  // Check D-dimer
+  // Check D-Dimer
   if (features.d_dimer !== null && features.d_dimer !== undefined) {
     if (features.d_dimer > 0.5) {
       contributors.push({
-        factor: 'Elevated D-dimer',
+        factor: 'Elevated D-Dimer',
         direction: 'increases',
-        description: `D-dimer ${features.d_dimer} μg/mL (>0.5)`
+        description: `D-Dimer ${features.d_dimer} μg/mL (>0.5)`
       });
     } else {
       contributors.push({
-        factor: 'Normal D-dimer',
+        factor: 'Normal D-Dimer',
         direction: 'decreases',
-        description: `D-dimer ${features.d_dimer} μg/mL (≤0.5)`
+        description: `D-Dimer ${features.d_dimer} μg/mL (≤0.5)`
       });
     }
   }
