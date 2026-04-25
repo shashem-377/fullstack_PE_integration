@@ -11,8 +11,8 @@
             "severity": "info",
             "title": "Patient is ESI 1 with shortness of breath and recent long-haul flight. If PE is in your differential use linked PE workup to see consolidated patient data.",
             "detail": "PE workup consolidates relevant patient chart data such as previous diagnoses, hemodynamic stress, and patient CTPA safety risks.",
-            "suggestion": "Open PE Workup",
-            "link": ""
+            "suggestion": "",
+            "link": "Open PE Workup"
           }
         }
       ]

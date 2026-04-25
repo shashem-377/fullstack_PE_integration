@@ -1,6 +1,6 @@
 // AUTO-GENERATED — do not edit manually.
 // Source: frontend/src/docs/clinical-thresholds.json
-// Last synced: 2026-03-06T10:44:44Z
+// Last synced: 2026-04-25T20:27:09Z
 // To update: edit thresholds in the Clinical Thresholds doc tab — changes sync here automatically.
 
 export const CT = {
